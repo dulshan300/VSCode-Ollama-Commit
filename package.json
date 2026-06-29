@@ -4,6 +4,7 @@
   "description": "Generate meaningful git commit messages using local Ollama models",
   "version": "1.0.0",
   "publisher": "corescale",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
