@@ -1,0 +1,100 @@
+{
+  "name": "ollama-commit",
+  "displayName": "Ollama Commit",
+  "description": "Generate meaningful git commit messages using local Ollama models",
+  "version": "1.0.0",
+  "publisher": "corescale",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other", "SCM Providers"],
+  "keywords": ["git", "commit", "ollama", "ai", "llm"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/vscode-ollama-commit"
+  },
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ollamaCommit.generate",
+        "title": "Ollama: Generate Commit Message",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "ollamaCommit.generateWithPicker",
+        "title": "Ollama: Generate Commit Message (Pick Model)",
+        "icon": "$(list-unordered)"
+      },
+      {
+        "command": "ollamaCommit.showDiff",
+        "title": "Ollama: Show Diff & Generate",
+        "icon": "$(diff)"
+      }
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "ollamaCommit.generate",
+          "group": "navigation",
+          "when": "scmProvider == git"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Ollama Commit",
+      "properties": {
+        "ollamaCommit.ollamaUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Base URL of your local Ollama server"
+        },
+        "ollamaCommit.model": {
+          "type": "string",
+          "default": "llama3",
+          "description": "Default Ollama model to use for commit generation"
+        },
+        "ollamaCommit.maxDiffLength": {
+          "type": "number",
+          "default": 4000,
+          "description": "Maximum number of characters from the diff to send to Ollama"
+        },
+        "ollamaCommit.useStagedOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "Only use staged (git add) changes. If false, also includes unstaged changes when no staged changes exist."
+        },
+        "ollamaCommit.commitStyle": {
+          "type": "string",
+          "enum": ["conventional", "simple", "detailed"],
+          "default": "conventional",
+          "description": "Style of commit message to generate:\n- conventional: Follows Conventional Commits (feat, fix, docs...)\n- simple: One-line descriptive message\n- detailed: Message + bullet point body"
+        },
+        "ollamaCommit.customPrompt": {
+          "type": "string",
+          "default": "",
+          "description": "Override the default prompt. Use {{diff}} as placeholder for the git diff."
+        },
+        "ollamaCommit.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Ollama Commit button in the status bar"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "install-ext": "code --install-extension ollama-commit-1.0.0.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}
