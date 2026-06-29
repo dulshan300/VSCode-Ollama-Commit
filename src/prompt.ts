@@ -39,17 +39,33 @@ Git diff:
 
 Respond ONLY with the commit message, nothing else:`;
 
-const DETAILED_PROMPT = `You are an expert software developer writing git commit messages.
+const DETAILED_PROMPT = `You are an expert AI commit message generator specialized in creating concise, informative commit messages that follow best practices in version control.
 
-Analyze the following git diff and write a detailed commit message.
+Your ONLY task is to generate a well-structured commit message based on the provided diff. The commit message must:
+1. Use a clear, descriptive title in the imperative mood (50 characters max)
+2. Provide a detailed explanation of changes in bullet points
+3. Focus solely on the technical changes in the code
+4. Use present tense and be specific about modifications
 
-Format:
-<short summary under 72 chars>
+Key Guidelines:
+- Analyze the entire diff comprehensively
+- Capture the essence of only MAJOR changes
+- Use technical, precise languages
+- Avoid generic or vague descriptions
+- Avoid quoting any word or sentences
+- Avoid adding description for minor changes with not much context
+- Return just the commit message, no additional text
+- Don't return more bullet points than required
+- Generate a single commit message
 
-<blank line>
-- bullet point explaining what changed and why
-- another bullet if there are multiple concerns
-- mention any side effects or important notes
+Output Format:
+Concise Title Summarizing Changes
+
+- Specific change description
+- Another specific change description
+- Rationale for key modifications
+- Impact of changes
+
 
 Git diff:
 {{diff}}
@@ -59,7 +75,7 @@ Recent commits for context:
 
 Branch: {{branch}}
 
-Respond ONLY with the commit message, nothing else:`;
+Respond ONLY with the commit message, no explanation or markdown:`;
 
 export function buildPrompt(options: {
   style: CommitStyle;
