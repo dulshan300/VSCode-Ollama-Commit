@@ -17,35 +17,51 @@ export async function getGitDiff(
   cwd: string,
   useStagedOnly: boolean
 ): Promise<DiffResult> {
-  // Try staged first
-  const { stdout: stagedDiff } = await execAsync('git diff --staged --no-color', { cwd });
-  const { stdout: stagedFiles } = await execAsync(
-    'git diff --staged --name-only',
-    { cwd }
-  );
+  const [
+    { stdout: stagedDiff },
+    { stdout: stagedFiles },
+    { stdout: unstagedDiff },
+    { stdout: unstagedFiles }
+  ] = await Promise.all([
+    execAsync('git diff --cached --no-color', { cwd }),
+    execAsync('git diff --cached --name-only', { cwd }),
+    execAsync('git diff --no-color', { cwd }),
+    execAsync('git diff --name-only', { cwd })
+  ]);
 
-  if (stagedDiff.trim()) {
-    return {
-      diff: stagedDiff,
-      isStaged: true,
-      filesChanged: stagedFiles.trim().split('\n').filter(Boolean),
-      isEmpty: false
-    };
-  }
+  const hasStaged = !!stagedDiff.trim();
+  const hasUnstaged = !!unstagedDiff.trim();
 
-  if (useStagedOnly) {
+  if (!hasStaged && !hasUnstaged) {
     return { diff: '', isStaged: true, filesChanged: [], isEmpty: true };
   }
 
-  // Fallback to unstaged
-  const { stdout: unstagedDiff } = await execAsync('git diff --no-color', { cwd });
-  const { stdout: unstagedFiles } = await execAsync('git diff --name-only', { cwd });
+  if (!hasStaged && useStagedOnly) {
+    return { diff: '', isStaged: true, filesChanged: [], isEmpty: true };
+  }
+
+  const allFiles = [
+    ...stagedFiles.trim().split('\n'),
+    ...unstagedFiles.trim().split('\n')
+  ].filter(Boolean).filter((f, i, arr) => arr.indexOf(f) === i);
+
+  // Combine staged and unstaged diffs with a separator
+  let combinedDiff = '';
+  if (hasStaged) {
+    combinedDiff += '--- Staged changes (git diff --cached) ---\n' + stagedDiff;
+  }
+  if (hasUnstaged && !useStagedOnly) {
+    if (combinedDiff) { combinedDiff += '\n'; }
+    combinedDiff += '--- Unstaged changes (git diff) ---\n' + unstagedDiff;
+  } else if (hasStaged && hasUnstaged) {
+    combinedDiff += '\n--- Unstaged changes (git diff) ---\n' + unstagedDiff;
+  }
 
   return {
-    diff: unstagedDiff,
-    isStaged: false,
-    filesChanged: unstagedFiles.trim().split('\n').filter(Boolean),
-    isEmpty: !unstagedDiff.trim()
+    diff: combinedDiff,
+    isStaged: hasStaged,
+    filesChanged: allFiles,
+    isEmpty: false
   };
 }
 
